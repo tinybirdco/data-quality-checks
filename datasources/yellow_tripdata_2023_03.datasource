@@ -1,0 +1,23 @@
+DESCRIPTION >
+    Generated from https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-03.parquet
+
+SCHEMA >
+    Airport_fee Float32 `json:$.Airport_fee`,
+    DOLocationID Int16 `json:$.DOLocationID`,
+    PULocationID Int16 `json:$.PULocationID`,
+    RatecodeID Int16 `json:$.RatecodeID`,
+    VendorID Int16 `json:$.VendorID`,
+    congestion_surcharge Float32 `json:$.congestion_surcharge`,
+    extra Float32 `json:$.extra`,
+    fare_amount Float32 `json:$.fare_amount`,
+    improvement_surcharge Float32 `json:$.improvement_surcharge`,
+    mta_tax Float32 `json:$.mta_tax`,
+    passenger_count Int16 `json:$.passenger_count`,
+    payment_type Int16 `json:$.payment_type`,
+    store_and_fwd_flag String `json:$.store_and_fwd_flag`,
+    tip_amount Float32 `json:$.tip_amount`,
+    tolls_amount Float32 `json:$.tolls_amount`,
+    total_amount Float32 `json:$.total_amount`,
+    tpep_dropoff_datetime DateTime `json:$.tpep_dropoff_datetime`,
+    tpep_pickup_datetime DateTime `json:$.tpep_pickup_datetime`,
+    trip_distance Float32 `json:$.trip_distance`

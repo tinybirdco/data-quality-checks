@@ -1,0 +1,87 @@
+NODE yellow_tripdata_qa_helpers
+DESCRIPTION >
+   Helper calculations to be used in the measurements.
+SQL >
+   SELECT count(*) as count_, 
+   avg(total_amount) as avg_, 
+   stddevPop(total_amount) as stddev_, 
+   max(toYYYYMMDD(tpep_pickup_datetime)) max_day_
+FROM yellow_tripdata
+
+NODE yellow_tripdata_qa_accuracy
+DESCRIPTION >
+   Percentage of records that are more than six sigma away from the average.
+SQL >
+   SELECT round(100 * fail_total / count_, 2) as fail_percentage
+   FROM (
+       SELECT count(*) as fail_total
+       FROM yellow_tripdata t, yellow_tripdata_qa_helpers h
+       WHERE abs(total_amount - avg_) > (6 * stddev_)
+   ), yellow_tripdata_qa_helpers
+
+NODE yellow_tripdata_qa_completeness
+DESCRIPTION >
+   Percentage of nulls in the total_amount field
+SQL >
+   SELECT round(100 * fail_total / count_, 2) as fail_percentage
+   FROM (
+       SELECT count(*) as fail_total
+       FROM yellow_tripdata t, yellow_tripdata_qa_helpers h
+       WHERE total_amount is null
+   ), yellow_tripdata_qa_helpers
+
+NODE yellow_tripdata_qa_consistency
+DESCRIPTION >
+   Average of the total_amount field for one day and checking that the value is not very different than the average computed for all the data
+SQL >
+   SELECT round(100 * fail_total / count_, 2) as fail_percentage
+   FROM (
+       SELECT count(*) as fail_total
+       FROM yellow_tripdata t, yellow_tripdata_qa_helpers h
+       WHERE toYYYYMMDD(tpep_pickup_datetime) = max_day_
+       AND abs(total_amount - avg_)  > (6 * stddev_)
+   ), yellow_tripdata_qa_helpers
+
+NODE yellow_tripdata_qa_uniqueness
+DESCRIPTION >
+   Number of duplicated records
+SQL >
+   SELECT round(100 * fail_total / count_, 2) as fail_percentage
+   FROM (
+       SELECT count(*) as fail_total
+       FROM (
+           SELECT tpep_dropoff_datetime, passenger_count, payment_type, count(*)
+           FROM yellow_tripdata t
+           GROUP BY tpep_dropoff_datetime, passenger_count, payment_type
+           HAVING count(*) > 1
+       )
+   ), yellow_tripdata_qa_helpers
+
+NODE yellow_tripdata_qa_validity
+DESCRIPTION >
+   Percentage of records whose value in the total_amount field is outside a range
+SQL >
+   SELECT round(100 * fail_total / count_, 2) as fail_percentage
+   FROM (
+       SELECT count(*) as fail_total        FROM yellow_tripdata t, yellow_tripdata_qa_helpers h
+       WHERE total_amount NOT BETWEEN 0 and 500
+   ), yellow_tripdata_qa_helpers
+
+NODE yellow_tripdata_qa_report
+DESCRIPTION >
+   Report joining all the QA tests
+SQL >
+   SELECT 'yellow_tripdata_qa_accuracy' test, fail_percentage
+   FROM yellow_tripdata_qa_accuracy
+   UNION ALL
+   SELECT 'yellow_tripdata_qa_completeness' test, fail_percentage
+   FROM yellow_tripdata_qa_completeness
+   UNION ALL
+   SELECT 'yellow_tripdata_qa_consistency' test, fail_percentage
+   FROM yellow_tripdata_qa_consistency
+   UNION ALL
+   SELECT 'yellow_tripdata_qa_uniqueness' test, fail_percentage
+   FROM yellow_tripdata_qa_uniqueness
+   UNION ALL
+   SELECT 'yellow_tripdata_qa_validity' test, fail_percentage
+   FROM yellow_tripdata_qa_validity
